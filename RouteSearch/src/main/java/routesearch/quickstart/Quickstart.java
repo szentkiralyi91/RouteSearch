@@ -1,4 +1,4 @@
-package org.geotools.routesearch;
+package routesearch.quickstart;
 
 import java.io.File;
 
