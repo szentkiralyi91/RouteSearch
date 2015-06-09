@@ -43,15 +43,22 @@ import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 
+
+//Kell ez nekunk?....
 public class StyleLab {
 
     static StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory();
     static FilterFactory filterFactory = CommonFactoryFinder.getFilterFactory();
 
-    public static void main(String[] args) throws Exception {
+    
+    public static void run() throws Exception {
         StyleLab me = new StyleLab();
         me.displayShapefile();
     }
+    
+    
+    // <editor-fold defaultstate="collapsed" desc="Default functions">
+    
     
      /**
      * Prompts the user for a shapefile (unless a filename is provided
@@ -243,5 +250,5 @@ public class StyleLab {
 
         return style;
     }
-
+// </editor-fold>
 }

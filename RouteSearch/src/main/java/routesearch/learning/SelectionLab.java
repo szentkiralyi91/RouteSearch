@@ -95,20 +95,18 @@ public class SelectionLab {
     /*
      * The application method
      */
-    public static void main(String[] args) throws Exception {
+    
+    public static void run(File file) throws Exception {
         SelectionLab me = new SelectionLab();
-
-        File file = JFileDataStoreChooser.showOpenFile("shp", null);
-        if (file == null) {
-            return;
-        }
-
         me.displayShapefile(file);
     }
+    
      /**
      * This method connects to the shapefile; retrieves information about
      * its features; creates a map frame to display the shapefile and adds
      * a custom feature selection tool to the toolbar of the map frame.
+     * @param file
+     * @throws java.lang.Exception
      */
     public void displayShapefile(File file) throws Exception {
         FileDataStore store = FileDataStoreFinder.getDataStore(file);
@@ -147,6 +145,7 @@ public class SelectionLab {
          */
         btn.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 mapFrame.getMapPane().setCursorTool(
                         new CursorTool() {

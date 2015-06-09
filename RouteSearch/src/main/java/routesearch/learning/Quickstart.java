@@ -19,17 +19,21 @@ import org.geotools.swing.data.JFileDataStoreChooser;
  * This is the GeoTools Quickstart application used in documentationa and tutorials. *
  */
 public class Quickstart {
+    
+    /**
+     *
+     * @throws Exception
+     */
+    public static void run() throws Exception{
+        run(null);
+    }
 
     /**
-     * GeoTools Quickstart demo application. Prompts the user for a shapefile and displays its
-     * contents on the screen in a map frame
+     * @param file
+     * @throws java.lang.Exception
      */
-    public static void main(String[] args) throws Exception {
+    public static void run(File file) throws Exception {
         // display a data store file chooser dialog for shapefiles
-        File file = JFileDataStoreChooser.showOpenFile("shp", null);
-        if (file == null) {
-            return;
-        }
 
         FileDataStore store = FileDataStoreFinder.getDataStore(file);
         SimpleFeatureSource featureSource = store.getFeatureSource();

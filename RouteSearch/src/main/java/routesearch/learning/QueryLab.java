@@ -31,19 +31,14 @@ import org.geotools.data.Query;
 import org.geotools.data.postgis.PostgisNGDataStoreFactory;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.swing.action.SafeAction;
 import org.geotools.swing.data.JDataStoreWizard;
 import org.geotools.swing.table.FeatureCollectionTableModel;
 import org.geotools.swing.wizard.JWizard;
-import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.filter.Filter;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 
 /**
  * The Query Lab is an excuse to try out Filters and Expressions on your own
@@ -59,11 +54,13 @@ public class QueryLab extends JFrame {
     private JTable table;
     private JTextField text;
 
-    public static void main(String[] args) throws Exception {
+    
+    public static void run() throws Exception {
         JFrame frame = new QueryLab();
         frame.setVisible(true);
     }
-
+    
+    
     public QueryLab() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         getContentPane().setLayout(new BorderLayout());
@@ -95,27 +92,32 @@ public class QueryLab extends JFrame {
 
         //Connect to either database or Shapefile
         fileMenu.add(new SafeAction("Open shapefile...") {
+            @Override
             public void action(ActionEvent e) throws Throwable {
                 connect(new ShapefileDataStoreFactory());
             }
         });
         fileMenu.add(new SafeAction("Connect to PostGIS database...") {
+            @Override
             public void action(ActionEvent e) throws Throwable {
                 connect(new PostgisNGDataStoreFactory());
             }
         });
         fileMenu.add(new SafeAction("Connect to DataStore...") {
+            @Override
             public void action(ActionEvent e) throws Throwable {
                 connect(null);
             }
         });
         fileMenu.addSeparator();
         fileMenu.add(new SafeAction("Exit") {
+            @Override
             public void action(ActionEvent e) throws Throwable {
                 System.exit(0);
             }
         });
         dataMenu.add(new SafeAction("Get features") {
+            @Override
             public void action(ActionEvent e) throws Throwable {
                 filterFeatures();
             }
