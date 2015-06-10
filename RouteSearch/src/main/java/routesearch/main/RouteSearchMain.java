@@ -18,7 +18,7 @@ import routesearch.learning.*;
  */
 public class RouteSearchMain {
     
-    public static final String PATH_TO_SHPS = "D:\\github\\RouteSearch\\shapefile\\hungary\\";
+    public static final String PATH_TO_SHPS = "D:\\github\\RouteSearch\\shapefile\\world\\";
     
     
     public static File currentFile;
@@ -30,15 +30,17 @@ public class RouteSearchMain {
      */
     public static void main(String[] args) throws Exception {
         
-        currentFile = getFile("roads");
+        QueryLab.run();
+        /*
+        currentFile = getFile("cities20");
         if(currentFile != null){
-            QueryLab.run();
-            //SelectionLab.run(file);
-            //Quickstart.run(file);
+            //SelectionLab.run(currentFile);
+            Quickstart.run(currentFile);
             //StyleLab.run();
         } else {
             System.err.println("Nope :(");
         }
+        */        
     }
     
     public static File getFile(String shapeFileName) throws IOException{
