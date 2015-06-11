@@ -1,13 +1,4 @@
-/*
- *    GeoTools - The Open Source Java GIS Toolkit
- *    http://geotools.org
- *
- *    (C) 2006-2008, Open Source Geospatial Foundation (OSGeo)
- *
- *    This file is hereby placed into the Public Domain. This means anyone is
- *    free to do whatever they wish with this file. Use it well and enjoy!
- */
-package routesearch.learning;
+package routesearch.geotools;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -15,11 +6,13 @@ import java.awt.event.ActionEvent;
 import java.util.Map;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -47,91 +40,42 @@ import org.opengis.filter.Filter;
  * Remember when programming that you have other options then the CQL parser,
  * you can directly make a Filter using CommonFactoryFinder.getFilterFactory2().
  */
-public class QueryLab extends JFrame {
+public class QueryPane extends JPanel {
 
     private DataStore dataStore;
     private JComboBox featureTypeCBox;
     private JTable table;
     private JTextField text;
-
-    
-    public static void run() throws Exception {
-        JFrame frame = new QueryLab();
-        frame.setVisible(true);
-    }
-    
-    
-    public QueryLab() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        getContentPane().setLayout(new BorderLayout());
-
+        
+    public QueryPane() {
+        setPreferredSize(new Dimension(1366,100));
         text = new JTextField(80);
         text.setText("include"); // include selects everything!
-        getContentPane().add(text, BorderLayout.NORTH);
+        add(text, BorderLayout.NORTH);
 
         table = new JTable();
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.setModel(new DefaultTableModel(5, 5));
         table.setPreferredScrollableViewportSize(new Dimension(500, 200));
-
-        JScrollPane scrollPane = new JScrollPane(table);
-        getContentPane().add(scrollPane, BorderLayout.CENTER);
-
-        JMenuBar menubar = new JMenuBar();
-        setJMenuBar(menubar);
-
-        JMenu fileMenu = new JMenu("File");
-        menubar.add(fileMenu);
-
-        featureTypeCBox = new JComboBox();
-        menubar.add(featureTypeCBox);
-
-        JMenu dataMenu = new JMenu("Data");
-        menubar.add(dataMenu);
-        pack();
-
-        //Connect to either database or Shapefile
-        fileMenu.add(new SafeAction("Open shapefile...") {
-            @Override
-            public void action(ActionEvent e) throws Throwable {
-                connect(new ShapefileDataStoreFactory());
-            }
-        });
-        fileMenu.add(new SafeAction("Connect to PostGIS database...") {
-            @Override
-            public void action(ActionEvent e) throws Throwable {
-                connect(new PostgisNGDataStoreFactory());
-            }
-        });
-        fileMenu.add(new SafeAction("Connect to DataStore...") {
-            @Override
-            public void action(ActionEvent e) throws Throwable {
-                connect(null);
-            }
-        });
-        fileMenu.addSeparator();
-        fileMenu.add(new SafeAction("Exit") {
-            @Override
-            public void action(ActionEvent e) throws Throwable {
-                System.exit(0);
-            }
-        });
-        dataMenu.add(new SafeAction("Get features") {
+        
+        JButton features = new JButton("Features");
+        features.addActionListener(new SafeAction("Get features") {
             @Override
             public void action(ActionEvent e) throws Throwable {
                 filterFeatures();
             }
         });
-        dataMenu.add(new SafeAction("Count") {
-            public void action(ActionEvent e) throws Throwable {
-                countFeatures();
-            }
-        });
-        dataMenu.add(new SafeAction("Geometry") {
-            public void action(ActionEvent e) throws Throwable {
-                queryFeatures();
-            }
-        });
+        add(features);
+//        dataMenu.add(new SafeAction("Count") {
+//            public void action(ActionEvent e) throws Throwable {
+//                countFeatures();
+//            }
+//        });
+//        dataMenu.add(new SafeAction("Geometry") {
+//            public void action(ActionEvent e) throws Throwable {
+//                queryFeatures();
+//            }
+//        });
     }
 
     private void connect(DataStoreFactorySpi format) throws Exception {
@@ -147,18 +91,19 @@ public class QueryLab extends JFrame {
         }
     }
 
-    private void updateUI() throws Exception {
-        ComboBoxModel cbm = new DefaultComboBoxModel(dataStore.getTypeNames());
-        featureTypeCBox.setModel(cbm);
-
-        table.setModel(new DefaultTableModel(5, 5));
-    }
+//    private void updateUI() throws Exception {
+//        ComboBoxModel cbm = new DefaultComboBoxModel(dataStore.getTypeNames());
+//        featureTypeCBox.setModel(cbm);
+//
+//        table.setModel(new DefaultTableModel(5, 5));
+//    }
 
     private void filterFeatures() throws Exception {
         String typeName = (String) featureTypeCBox.getSelectedItem();
         SimpleFeatureSource source = dataStore.getFeatureSource(typeName);
 
         Filter filter = CQL.toFilter(text.getText());
+        //Filter filter = CQL.toFilter("type='town'");
         SimpleFeatureCollection features = source.getFeatures(filter);
         FeatureCollectionTableModel model = new FeatureCollectionTableModel(features);
         table.setModel(model);
