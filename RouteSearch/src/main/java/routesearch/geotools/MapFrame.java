@@ -6,22 +6,26 @@ import javax.swing.JFrame;
 
 public class MapFrame extends JFrame {
 
-    public MapFrame(File file) throws Exception {
+    /**
+     * Erre a frame-re rajzoljuk ki a térképet, és választó panelt.
+     *
+     * @param placesFile
+     * @param roadsFile
+     * @throws Exception
+     */
+    public MapFrame(File placesFile, File roadsFile) throws Exception {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null);
         setSize(new Dimension(1366, 700));
-        
-        
-        QueryPane qp = new QueryPane();
-        add(qp);
-        qp.setBounds(0, 0, 1366, 100);
-        
-        MapPane mp = new MapPane(file);
+
+        MapPane mp = new MapPane(placesFile);
         add(mp);
-        mp.setBounds(0, 100, 1366, 600);
-        
+        mp.setBounds(0, 150, 1366, 550);
+
+        QueryPane qp = new QueryPane(placesFile, roadsFile, mp);
+        add(qp);
+        qp.setBounds(0, 0, 1366, 150);
+
         setVisible(true);
-
     }
-
 }

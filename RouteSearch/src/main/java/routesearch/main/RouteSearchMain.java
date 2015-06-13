@@ -4,15 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import org.geotools.swing.data.JFileDataStoreChooser;
 import routesearch.geotools.MapFrame;
-import routesearch.geotools.MapPane;
-import routesearch.geotools.QueryPane;
-import routesearch.geotools.SelectionLab;
 
 public class RouteSearchMain {
 
     public static final String PATH_TO_SHPS = "..\\shapefile\\hungary\\";
 
-    public static File currentFile;
+    public static File placesFile;
+    public static File roadsFile;
 
     /**
      * @param args the command line arguments
@@ -20,11 +18,10 @@ public class RouteSearchMain {
      */
     public static void main(String[] args) throws Exception {
 
-        currentFile = getFile("places");
-        if (currentFile != null) {
-            //SelectionLab.run(currentFile);
-            new MapFrame(currentFile);
-//            QueryPane.run();
+        placesFile = getFile("places");
+        roadsFile = getFile("roads");
+        if (placesFile != null) {
+            new MapFrame(placesFile, roadsFile);
         } else {
             System.err.println("Nope :(");
         }
@@ -54,11 +51,11 @@ public class RouteSearchMain {
 
     //<editor-fold defaultstate="collapsed" desc="Setters, Getters">
     public static File getCurrentFile() {
-        return currentFile;
+        return placesFile;
     }
 
     public static void setCurrentFile(File currentFile) {
-        RouteSearchMain.currentFile = currentFile;
+        RouteSearchMain.placesFile = currentFile;
     }
     // </editor-fold>
 }

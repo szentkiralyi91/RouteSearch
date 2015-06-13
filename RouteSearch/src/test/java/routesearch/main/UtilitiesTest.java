@@ -5,6 +5,7 @@
  */
 package routesearch.main;
 
+import routeserach.utilities.Utilities;
 import java.awt.geom.Point2D;
 import org.junit.After;
 import org.junit.AfterClass;
