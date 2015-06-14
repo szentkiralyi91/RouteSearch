@@ -1,21 +1,30 @@
 package routesearch.geotools;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.io.ParseException;
 import java.awt.Color;
 import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JToolBar;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.filter.text.cql2.CQL;
+import org.geotools.filter.text.cql2.CQLException;
+import org.geotools.geometry.jts.WKTReader2;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
@@ -38,9 +47,12 @@ import org.geotools.swing.action.PanAction;
 import org.geotools.swing.action.ResetAction;
 import org.geotools.swing.action.ZoomInAction;
 import org.geotools.swing.action.ZoomOutAction;
+import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
+import routesearch.utilities.Road;
+import routesearch.utilities.Utilities;
 
 public class MapPane extends JMapPane {
 
@@ -81,7 +93,7 @@ public class MapPane extends JMapPane {
         map.addLayer(layer);
         setMapContent(map);
         
-        System.out.println(map.layers().size());
+        System.out.println("Map layer size: " + map.layers().size());
     }
 
     /**
@@ -97,14 +109,13 @@ public class MapPane extends JMapPane {
     protected final Layer loadLayer(File file, String type, ArrayList<String> data) throws Exception {
         FileDataStore store = FileDataStoreFinder.getDataStore(file);
         SimpleFeatureSource featureSource = store.getFeatureSource();
-
+        
         Layer layer = null;
         switch (type) {
             case "places": {
-                //CQL lekérdezésből létrehoz egy filtert
-                Filter filter = CQL.toFilter("type='town' or type = 'village' or type ='city'");
+                
                 //A filter segítségével leszűri az adatokat
-                SimpleFeatureCollection features = featureSource.getFeatures(filter);
+                SimpleFeatureCollection features = getFilteredFeatures(featureSource, "type='town' or type = 'village' or type ='city'");
                 //Stílus beállítás
                 Style style = SLD.createSimpleStyle(features.getSchema());
                 //Layer létrehozása az adatok, és a stílus alapján
@@ -112,24 +123,104 @@ public class MapPane extends JMapPane {
                 break;
             }
             case "roads": {
-                Filter filter = CQL.toFilter("ref='M5'");
-                SimpleFeatureCollection features = featureSource.getFeatures(filter);
-                Style style = createStyle(featureSource);
-                layer = new FeatureLayer(features, style);
+                SimpleFeatureCollection features;               
+                features = getFilteredFeatures(featureSource, "type='primary'");
+/*            
+                WKTReader2 wktReader = new WKTReader2();
+                SimpleFeatureIterator it = features.features();
+                List<Road> allImportantRoads = new ArrayList<>();
+                List<Road> drawingRoads = new ArrayList<>();
+                while (it.hasNext()) {
+                    SimpleFeature currentFeature = it.next();
+                    Road road = new Road(currentFeature.getAttribute("osm_id").toString(),
+                                         wktReader.read(currentFeature.getAttribute("the_geom").toString()).getCoordinates());
+                    allImportantRoads.add(road);
+                    System.out.println(road);
+                }       
+
+                Coordinate debrecen = new Coordinate(21.6259782, 47.531399);
+                Coordinate budapest = new Coordinate(19.0404707, 47.4983815);
+                
+
+                double distance_debrecen;
+                double distance_budapest;
+                double current_distance_debrecen = Utilities.getDistanceBetweenRoadAndPoint(allImportantRoads.get(0), debrecen);
+                double current_distance_budapest = Utilities.getDistanceBetweenRoadAndPoint(allImportantRoads.get(0), budapest);
+                
+                for(Road currentRoad : allImportantRoads){
+                    if(!drawingRoads.contains(currentRoad)){
+                        distance_debrecen = Utilities.getDistanceBetweenRoadAndPoint(currentRoad, debrecen);
+                        distance_budapest = Utilities.getDistanceBetweenRoadAndPoint(currentRoad, budapest);
+                        if(distance_debrecen >= current_distance_debrecen && distance_budapest <= current_distance_budapest){
+                           drawingRoads.add(currentRoad);     
+                           System.out.println("Debrecen: " + currentRoad);
+                        }
+                    }
+                }
+*/                
+ /*               
+                
+                for(Road currentRoad : allImportantRoads){
+                    if(!drawingRoads.contains(currentRoad)){
+                        for(Road currentDrawingRoad : drawingRoads){
+                            if(Utilities.doRoadsHaveIntersection(currentRoad, currentDrawingRoad))
+                                drawingRoads.add(currentRoad);
+                        }
+
+                    } else {
+ //                       System.out.println("Contains road: " + currentRoad.toString());
+                    }               
+                }
+ */ 
+/*                
+                String filterText = "osm_id=" + drawingRoads.get(0).getOsmId();
+                for(int i=1; i<drawingRoads.size(); i++){
+                    filterText += " OR osm_id=" + drawingRoads.get(i).getOsmId();
+                }
+                
+                System.out.println("FilterText: " + filterText);                                
+                features = getFilteredFeatures(featureSource, filterText);
+*/                
+                
+                Style style = createStyle(featureSource, Color.BLUE);
+                layer = new FeatureLayer(features, style);             
                 break;
             }
             case "selectedPlaces": {
-                Filter filter = CQL.toFilter("name = '" + data.get(0) + 
-                        "' or name ='" + data.get(1) + 
-                        "' and (type='town' or type = 'village' or type ='city')");
-                SimpleFeatureCollection features = featureSource.getFeatures(filter);
-                Style style = createStyle(featureSource);
+                SimpleFeatureCollection features = getFilteredFeatures(featureSource, getSelectedPlacesFilter(data.get(0), data.get(1)));
+                Style style = createStyle(featureSource, Color.RED);
                 layer = new FeatureLayer(features, style);
                 break;
             }
         }
 
         return layer;
+    }
+    
+    /*
+    CQL lekérdezésből létrehoz egy filtert és a filter segítségével leszűri az adatokat  
+    */
+    public static SimpleFeatureCollection getFilteredFeatures(File file, String filterString) throws IOException, CQLException{
+        FileDataStore store = FileDataStoreFinder.getDataStore(file);
+        SimpleFeatureSource featureSource = store.getFeatureSource();         
+        return getFilteredFeatures(featureSource, filterString);  
+    }
+ 
+    public static SimpleFeatureCollection getFilteredFeatures(SimpleFeatureSource featureSource, String filterString) throws IOException, CQLException{
+        Filter filter = CQL.toFilter(filterString);
+        return featureSource.getFeatures(filter);        
+    }
+    
+    public String getSelectedPlacesFilter(String fromWhere, String toWhere){
+        return "name = '" + fromWhere + "' or name ='" + toWhere + "' and (type='town' or type = 'village' or type ='city')";
+    }
+ 
+  
+    private String getGetWktGeometryStringFromFeature(SimpleFeature feature) throws ParseException{
+        WKTReader2 wktReader = new WKTReader2();
+        String s = wktReader.read(feature.getAttribute("the_geom").toString()).toString();
+        System.out.println("Returning WKT String from feature: " + s);
+        return s;
     }
 
     /**
@@ -165,37 +256,37 @@ public class MapPane extends JMapPane {
      * Egy stílust hoz létre, attól függően, hogy multipoligon, egyenes, vagy
      * pont a poligonunk.
      */
-    private Style createStyle(FeatureSource featureSource) {
+    private Style createStyle(FeatureSource featureSource, Color color) {
         SimpleFeatureType schema = (SimpleFeatureType) featureSource.getSchema();
         Class geomType = schema.getGeometryDescriptor().getType().getBinding();
 
         if (Polygon.class.isAssignableFrom(geomType)
                 || MultiPolygon.class.isAssignableFrom(geomType)) {
-            return createPolygonStyle();
+            return createPolygonStyle(color);
 
         } else if (LineString.class.isAssignableFrom(geomType)
                 || MultiLineString.class.isAssignableFrom(geomType)) {
-            return createLineStyle();
+            return createLineStyle(color);
 
         } else {
-            return createPointStyle();
+            return createPointStyle(color);
         }
     }
 
     /**
      * Multipoligon stílusa: piros
      */
-    private Style createPolygonStyle() {
+    private Style createPolygonStyle(Color color) {
 
         // piros vonal
         Stroke stroke = styleFactory.createStroke(
-                filterFactory.literal(Color.RED),
+                filterFactory.literal(color),
                 filterFactory.literal(1),
                 filterFactory.literal(0.5));
 
         // piros kitöltés, kicsit átlátszó
         Fill fill = styleFactory.createFill(
-                filterFactory.literal(Color.RED),
+                filterFactory.literal(color),
                 filterFactory.literal(0.5));
 
         PolygonSymbolizer sym = styleFactory.createPolygonSymbolizer(stroke, fill, null);
@@ -212,9 +303,9 @@ public class MapPane extends JMapPane {
     /**
      * A vonal stílusa: piros
      */
-    private Style createLineStyle() {
+    private Style createLineStyle(Color color) {
         Stroke stroke = styleFactory.createStroke(
-                filterFactory.literal(Color.RED),
+                filterFactory.literal(color),
                 filterFactory.literal(1));
 
         LineSymbolizer sym = styleFactory.createLineSymbolizer(stroke, null);
@@ -231,15 +322,15 @@ public class MapPane extends JMapPane {
     /**
      * A pont stílusa: piros
      */
-    private Style createPointStyle() {
+    private Style createPointStyle(Color color) {
         Graphic gr = styleFactory.createDefaultGraphic();
 
         Mark mark = styleFactory.getCircleMark();
 
         mark.setStroke(styleFactory.createStroke(
-                filterFactory.literal(Color.RED), filterFactory.literal(1)));
+                filterFactory.literal(color), filterFactory.literal(1)));
 
-        mark.setFill(styleFactory.createFill(filterFactory.literal(Color.RED)));
+        mark.setFill(styleFactory.createFill(filterFactory.literal(color)));
 
         gr.graphicalSymbols().clear();
         gr.graphicalSymbols().add(mark);

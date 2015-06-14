@@ -11,20 +11,21 @@ public class RouteSearchMain {
 
     public static File placesFile;
     public static File roadsFile;
+    public static MapFrame mainMapFrame;
 
     /**
      * @param args the command line arguments
      * @throws java.lang.Exception
      */
     public static void main(String[] args) throws Exception {
-
+              
         placesFile = getFile("places");
         roadsFile = getFile("roads");
-        if (placesFile != null) {
-            new MapFrame(placesFile, roadsFile);
+        if (placesFile != null && roadsFile != null) {
+            mainMapFrame = new MapFrame(placesFile, roadsFile);
         } else {
             System.err.println("Nope :(");
-        }
+        }      
     }
 
     public static File getFile(String shapeFileName) throws IOException {

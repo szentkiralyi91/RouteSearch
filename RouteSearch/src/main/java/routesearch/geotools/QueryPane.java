@@ -2,7 +2,9 @@ package routesearch.geotools;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -24,6 +26,7 @@ public class QueryPane extends JPanel {
 
     private FileDataStore dataStore;
     private final JTable table;
+    private final JScrollPane scrollPaneForTable;
     private final JTextField textFrom;
     private final JTextField textTo;
     private final MapPane mapPane;
@@ -56,19 +59,26 @@ public class QueryPane extends JPanel {
         table = new JTable();
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.setModel(new DefaultTableModel(6, 5));
+        table.setVisible(false);
 
-        JScrollPane scrollPane = new JScrollPane(table);
-        add(scrollPane);
-        scrollPane.setBounds(800, 30, 500, 100);
+        scrollPaneForTable = new JScrollPane(table);
+        add(scrollPaneForTable);
+        scrollPaneForTable.setBounds(800, 30, 500, 100);
+        scrollPaneForTable.setVisible(false);
 
         connect(placesFile);
         JButton features = new JButton("Útvonal");
         features.addActionListener(new SafeAction("Útvonal") {
             @Override
             public void action(ActionEvent e) throws Throwable {
+                System.out.println("Begining time: " + new Timestamp(new Date().getTime()));
                 addLayerFromQueryPane(placesFile, "selectedPlaces");
                 addLayerFromQueryPane(roadsFile, "roads");
                 filterFeatures();
+                table.setVisible(true);
+                scrollPaneForTable.setVisible(true);
+                System.out.println("Ending time: " + new Timestamp(new Date().getTime()));
+               
             } 
         });
         add(features);
@@ -83,7 +93,7 @@ public class QueryPane extends JPanel {
                 data.add(textTo.getText());
                 break;
             case "roads":
-                data.add("M3");
+                data.add(textFrom.getText());
                 break;
         }
         Layer layer = mapPane.loadLayer(file, type, data);

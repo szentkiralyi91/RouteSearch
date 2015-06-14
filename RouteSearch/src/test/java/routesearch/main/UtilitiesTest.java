@@ -5,8 +5,10 @@
  */
 package routesearch.main;
 
-import routeserach.utilities.Utilities;
+import com.vividsolutions.jts.geom.Coordinate;
+import routesearch.utilities.Utilities;
 import java.awt.geom.Point2D;
+import java.text.ParseException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -14,10 +16,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-/**
- *
- * @author Jani
- */
 public class UtilitiesTest {
     
     public UtilitiesTest() {
@@ -44,30 +42,34 @@ public class UtilitiesTest {
      */
     @Test
     public void testConvertPointFromWktGeometry1() {
-        System.out.println("convertPointFromWktGeometry");
         String wktGeometry = "";
-        Point2D expResult = null;
-        Point2D result = Utilities.convertPointFromWktGeometry(wktGeometry);
+        Coordinate expResult = null;
+        Coordinate result = Utilities.convertPointFromWktGeometry(wktGeometry);
         assertEquals(expResult, result);    
     }
     
     @Test
     public void testConvertPointFromWktGeometry2() {
-        System.out.println("convertPointFromWktGeometry");
         String wktGeometry = null;
-        Point2D expResult = null;
-        Point2D result = Utilities.convertPointFromWktGeometry(wktGeometry);
+        Coordinate expResult = null;
+        Coordinate result = Utilities.convertPointFromWktGeometry(wktGeometry);
         assertEquals(expResult, result);    
     }   
     
     @Test
     public void testConvertPointFromWktGeometry3() {
-        System.out.println("convertPointFromWktGeometry");
         String wktGeometry = "POINT(-38.48760780000001 -12.9710208)";
-        Point2D expResult;
-        expResult = new Point2D.Double(-38.48760780000001, -12.9710208);
-        Point2D result = Utilities.convertPointFromWktGeometry(wktGeometry);
+        Coordinate expResult;
+        expResult = new Coordinate(-38.48760780000001, -12.9710208);
+        Coordinate result = Utilities.convertPointFromWktGeometry(wktGeometry);
         assertEquals(expResult, result);    
-    }       
+    }  
     
+    /*
+    @Test(expected=ParseException.class)
+    public void testConvertPointFromWktGeometry4() {
+        String wktGeometry = "POINT(-38.48760780000001 -12.9710208)";
+        Coordinate result = Utilities.convertPointFromWktGeometry(wktGeometry);
+    }     
+    */
 }
