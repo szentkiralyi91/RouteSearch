@@ -1,7 +1,6 @@
 package routesearch.geotools;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.MultiPolygon;
@@ -10,7 +9,6 @@ import com.vividsolutions.jts.io.ParseException;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
@@ -51,6 +49,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
+import routesearch.utilities.Place;
 import routesearch.utilities.Road;
 import routesearch.utilities.Utilities;
 
@@ -125,7 +124,8 @@ public class MapPane extends JMapPane {
             case "roads": {
                 SimpleFeatureCollection features;               
                 features = getFilteredFeatures(featureSource, "type='primary'");
-/*            
+                
+                
                 WKTReader2 wktReader = new WKTReader2();
                 SimpleFeatureIterator it = features.features();
                 List<Road> allImportantRoads = new ArrayList<>();
@@ -135,44 +135,19 @@ public class MapPane extends JMapPane {
                     Road road = new Road(currentFeature.getAttribute("osm_id").toString(),
                                          wktReader.read(currentFeature.getAttribute("the_geom").toString()).getCoordinates());
                     allImportantRoads.add(road);
-                    System.out.println(road);
+                    //System.out.println(road);
                 }       
 
                 Coordinate debrecen = new Coordinate(21.6259782, 47.531399);
                 Coordinate budapest = new Coordinate(19.0404707, 47.4983815);
                 
-
-                double distance_debrecen;
-                double distance_budapest;
-                double current_distance_debrecen = Utilities.getDistanceBetweenRoadAndPoint(allImportantRoads.get(0), debrecen);
-                double current_distance_budapest = Utilities.getDistanceBetweenRoadAndPoint(allImportantRoads.get(0), budapest);
-                
-                for(Road currentRoad : allImportantRoads){
-                    if(!drawingRoads.contains(currentRoad)){
-                        distance_debrecen = Utilities.getDistanceBetweenRoadAndPoint(currentRoad, debrecen);
-                        distance_budapest = Utilities.getDistanceBetweenRoadAndPoint(currentRoad, budapest);
-                        if(distance_debrecen >= current_distance_debrecen && distance_budapest <= current_distance_budapest){
-                           drawingRoads.add(currentRoad);     
-                           System.out.println("Debrecen: " + currentRoad);
-                        }
-                    }
+                for(Road r : allImportantRoads){
+                    if(Utilities.isPointOnRoad(r, budapest) || Utilities.isPointOnRoad(r, debrecen))
+                        drawingRoads.add(r);
                 }
-*/                
- /*               
                 
-                for(Road currentRoad : allImportantRoads){
-                    if(!drawingRoads.contains(currentRoad)){
-                        for(Road currentDrawingRoad : drawingRoads){
-                            if(Utilities.doRoadsHaveIntersection(currentRoad, currentDrawingRoad))
-                                drawingRoads.add(currentRoad);
-                        }
 
-                    } else {
- //                       System.out.println("Contains road: " + currentRoad.toString());
-                    }               
-                }
- */ 
-/*                
+
                 String filterText = "osm_id=" + drawingRoads.get(0).getOsmId();
                 for(int i=1; i<drawingRoads.size(); i++){
                     filterText += " OR osm_id=" + drawingRoads.get(i).getOsmId();
@@ -180,7 +155,7 @@ public class MapPane extends JMapPane {
                 
                 System.out.println("FilterText: " + filterText);                                
                 features = getFilteredFeatures(featureSource, filterText);
-*/                
+                
                 
                 Style style = createStyle(featureSource, Color.BLUE);
                 layer = new FeatureLayer(features, style);             
@@ -216,12 +191,35 @@ public class MapPane extends JMapPane {
     }
  
   
-    private String getGetWktGeometryStringFromFeature(SimpleFeature feature) throws ParseException{
+    public String getGetWktGeometryStringFromFeature(SimpleFeature feature) throws ParseException{
         WKTReader2 wktReader = new WKTReader2();
         String s = wktReader.read(feature.getAttribute("the_geom").toString()).toString();
-        System.out.println("Returning WKT String from feature: " + s);
         return s;
     }
+    
+    public void createTranzitTable(File placesFile, File roadsFile) throws ParseException, IOException, CQLException{
+        SimpleFeatureCollection placesFeatures = getFilteredFeatures(placesFile, "type='city'");
+        SimpleFeatureCollection roadsFeatures = getFilteredFeatures(placesFile, "type='primary'");
+        
+        SimpleFeatureIterator placesFeaturesIterator = placesFeatures.features();
+        List<Place> placeList = new ArrayList<>();
+        while (placesFeaturesIterator.hasNext()) {
+            SimpleFeature currentFeature = placesFeaturesIterator.next();
+            placeList.add( new Place(currentFeature.getAttribute("osm_id").toString(),
+                                     currentFeature.getAttribute("name").toString(),
+                                     currentFeature.getAttribute("type").toString(),
+                                      Utilities.convertPointFromWktGeometry(getGetWktGeometryStringFromFeature(currentFeature))));        
+        }
+            
+        System.out.println("Transit table");
+        for (int i=0; i<placeList.size(); i++) {
+            for(int j=0; j<placeList.size(); j++) {
+                System.out.format("%20s%20s%40s\n", placeList.get(i).getName(), placeList.get(j).getName(), 
+                                                        Utilities.getDistanceBetweenPlaces(placeList.get(i),  placeList.get(j)));
+            }
+        }       
+    }
+       
 
     /**
      * Eszközök betöltése.

@@ -1,11 +1,8 @@
 package routesearch.utilities;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import java.io.File;
 import java.util.Arrays;
 import java.util.Objects;
-import routesearch.geotools.MapPane;
-import static routesearch.geotools.MapPane.getFilteredFeatures;
 
 public class Road {
     
@@ -47,10 +44,7 @@ public class Road {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Road other = (Road) obj;
-        if (!Objects.equals(this.osmId, other.osmId)) {
-            return false;
-        }
+        final Road other = (Road) obj;       
         return Arrays.deepEquals(this.coordinates, other.coordinates);
     }
 
@@ -67,5 +61,13 @@ public class Road {
     @Override
     public String toString() {
         return getCoordinateString();
+    }
+    
+    public double getRelativeLength(){
+        Coordinate first = new Coordinate(this.getCoordinates()[0].x, this.getCoordinates()[0].y);
+        Coordinate last = new Coordinate(this.getCoordinates()[this.getCoordinates().length-1].x, 
+                                         this.getCoordinates()[this.getCoordinates().length-1].y);
+        
+        return Math.abs(Math.sqrt(Math.pow(first.x - last.x, 2) + Math.pow(first.y - last.y, 2)));
     }
 }

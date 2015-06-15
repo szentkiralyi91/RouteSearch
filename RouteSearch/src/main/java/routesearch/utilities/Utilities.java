@@ -16,7 +16,7 @@ public class Utilities {
                 return null;
             
             Geometry point = new WKTReader().read(wktGeometry);
-            return new Coordinate(point.getInteriorPoint().getX(), point.getInteriorPoint().getY());
+            return new Coordinate(point.getCoordinate().x, point.getCoordinate().y);
             
         } catch (ParseException ex) {
             System.err.println("ParseException while parsing WKTgeometry["+wktGeometry+"] to Point: " + ex.getMessage());
@@ -56,7 +56,6 @@ public class Utilities {
                minDistance = distance;           
         }
         
-//        System.out.println("DISTANCRE: " + minDistance);
         return minDistance;      
     }
     
@@ -64,8 +63,13 @@ public class Utilities {
         return Point2D.distance(P.x, P.y, V.x, V.y);        
     }
     
+     
+    public static double getDistanceBetweenPlaces(Place p1, Place p2){
+        return Utilities.getDistanceBetweenPoints(p1.getCoordinate(), p2.getCoordinate());
+    }   
+    
     public static boolean isPointOnRoad(Road road, Coordinate point){     
-        return Utilities.getDistanceBetweenRoadAndPoint(road, point) < 0.0;
+        return Utilities.getDistanceBetweenRoadAndPoint(road, point) < 0.1;
     }
     
     public static boolean doRoadsHaveIntersection(Road r1, Road r2) {
@@ -116,7 +120,4 @@ public class Utilities {
         
         return minDistancedRoad;
     }
-    
-    
-   
 }

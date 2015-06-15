@@ -73,8 +73,10 @@ public class QueryPane extends JPanel {
             public void action(ActionEvent e) throws Throwable {
                 System.out.println("Begining time: " + new Timestamp(new Date().getTime()));
                 addLayerFromQueryPane(placesFile, "selectedPlaces");
+                //mapPane.createTranzitTable(placesFile, roadsFile);
                 addLayerFromQueryPane(roadsFile, "roads");
                 filterFeatures();
+                
                 table.setVisible(true);
                 scrollPaneForTable.setVisible(true);
                 System.out.println("Ending time: " + new Timestamp(new Date().getTime()));
