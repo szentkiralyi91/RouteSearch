@@ -125,7 +125,7 @@ public class MapPane extends JMapPane {
                 SimpleFeatureCollection features;               
                 features = getFilteredFeatures(featureSource, "type='primary'");
                 
-                
+/*                
                 WKTReader2 wktReader = new WKTReader2();
                 SimpleFeatureIterator it = features.features();
                 List<Road> allImportantRoads = new ArrayList<>();
@@ -155,11 +155,12 @@ public class MapPane extends JMapPane {
                 
                 System.out.println("FilterText: " + filterText);                                
                 features = getFilteredFeatures(featureSource, filterText);
-                
+*/                
                 
                 Style style = createStyle(featureSource, Color.BLUE);
                 layer = new FeatureLayer(features, style);             
                 break;
+                
             }
             case "selectedPlaces": {
                 SimpleFeatureCollection features = getFilteredFeatures(featureSource, getSelectedPlacesFilter(data.get(0), data.get(1)));
