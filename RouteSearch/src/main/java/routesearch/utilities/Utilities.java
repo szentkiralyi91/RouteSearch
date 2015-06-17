@@ -6,6 +6,7 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Utilities {
@@ -101,6 +102,18 @@ public class Utilities {
         }
         
         return false;
+    }
+    
+    public static List<Road> getNeighborRoads(List<Road> roadList, Road currentRoad){
+        List<Road> returnList = new ArrayList<>();
+        
+        for(Road r : roadList){
+            if(Utilities.doRoadsHaveIntersection(r, currentRoad))
+                returnList.add(r);
+            
+        }
+        
+        return returnList;
     }
     
     public static Road nearestRoadToPoint(List<Road> roads, Coordinate point){       

@@ -1,6 +1,5 @@
 package routesearch.geotools;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.MultiPolygon;
@@ -58,6 +57,7 @@ public class MapPane extends JMapPane {
     private final MapContent map;
     private final StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory();
     private final FilterFactory filterFactory = CommonFactoryFinder.getFilterFactory();
+    private SimpleFeatureCollection placesFeature;
 
     /**
      * Betölti a városokat (places) a térképre.
@@ -114,53 +114,130 @@ public class MapPane extends JMapPane {
             case "places": {
                 
                 //A filter segítségével leszűri az adatokat
-                SimpleFeatureCollection features = getFilteredFeatures(featureSource, "type='town' or type = 'village' or type ='city'");
+                if(placesFeature == null)
+                    placesFeature = getFilteredFeatures(featureSource, "type='town' or type = 'village' or type ='city'");
                 //Stílus beállítás
-                Style style = SLD.createSimpleStyle(features.getSchema());
+                Style style = SLD.createSimpleStyle(placesFeature.getSchema());
                 //Layer létrehozása az adatok, és a stílus alapján
-                layer = new FeatureLayer(features, style);
+                layer = new FeatureLayer(placesFeature, style);
                 break;
             }
             case "roads": {
-                SimpleFeatureCollection features;               
-                features = getFilteredFeatures(featureSource, "type='primary'");
-                
-/*                
-                WKTReader2 wktReader = new WKTReader2();
-                SimpleFeatureIterator it = features.features();
-                List<Road> allImportantRoads = new ArrayList<>();
-                List<Road> drawingRoads = new ArrayList<>();
-                while (it.hasNext()) {
-                    SimpleFeature currentFeature = it.next();
-                    Road road = new Road(currentFeature.getAttribute("osm_id").toString(),
-                                         wktReader.read(currentFeature.getAttribute("the_geom").toString()).getCoordinates());
-                    allImportantRoads.add(road);
-                    //System.out.println(road);
-                }       
+                SimpleFeatureCollection features; 
+                features = getFilteredFeatures(featureSource, "type='primary'");  
+                boolean letsTryThis = false;
+                if(letsTryThis){
+                    WKTReader2 wktReader = new WKTReader2();
 
-                Coordinate debrecen = new Coordinate(21.6259782, 47.531399);
-                Coordinate budapest = new Coordinate(19.0404707, 47.4983815);
-                
-                for(Road r : allImportantRoads){
-                    if(Utilities.isPointOnRoad(r, budapest) || Utilities.isPointOnRoad(r, debrecen))
-                        drawingRoads.add(r);
+                    SimpleFeatureIterator it = features.features();
+                    List<Road> allImportantRoads = new ArrayList<>();
+                    List<Road> drawingRoads = new ArrayList<>();
+                    while (it.hasNext()) {
+                        SimpleFeature currentFeature = it.next();
+                        Road road = new Road(currentFeature.getAttribute("osm_id").toString(),
+                                             wktReader.read(currentFeature.getAttribute("the_geom").toString()).getCoordinates());
+                        allImportantRoads.add(road);
+                        //System.out.println(road);
+                    }    
+
+                    System.out.println("allRoads size    : " + allImportantRoads.size());
+
+
+
+                    Place fromPlace = null;
+                    Place toPlace = null;
+                    boolean routesFound = false;
+
+                    if(placesFeature == null)
+                        placesFeature = getFilteredFeatures(featureSource, "type='town' or type = 'village' or type ='city'");                
+                    SimpleFeatureIterator placesIterator = placesFeature.features();
+
+                    while(placesIterator.hasNext()){
+                        SimpleFeature currentPlace = placesIterator.next();
+                        String placeName = currentPlace.getAttribute("name").toString();
+                        if(placeName.equalsIgnoreCase(data.get(0))){
+                            fromPlace = new Place(placeName,
+                                                  currentPlace.getAttribute("name").toString(),
+                                                  currentPlace.getAttribute("type").toString(),
+                                                  Utilities.convertPointFromWktGeometry(getGetWktGeometryStringFromFeature(currentPlace)));
+                        } else if(placeName.equalsIgnoreCase(data.get(1))){
+                             toPlace = new Place(placeName,
+                                                  currentPlace.getAttribute("name").toString(),
+                                                  currentPlace.getAttribute("type").toString(),
+                                                  Utilities.convertPointFromWktGeometry(getGetWktGeometryStringFromFeature(currentPlace)));                       
+                        }
+
+                        if(fromPlace != null && toPlace != null){
+                            routesFound = true;
+                            System.out.println("From: " + fromPlace.toString());
+                            System.out.println("To  : " + toPlace.toString());
+                            break;
+                        }
+                    }
+
+                    if(routesFound){
+                        for(Road r : allImportantRoads){
+                            if(Utilities.isPointOnRoad(r, fromPlace.getCoordinate()))
+                                drawingRoads.add(r);
+                        }
+
+                        boolean b = false;
+                        double distance, mindistance = 999999;
+                        int counter = 1, drawingListSize = -1;
+                        while(b == false){
+
+                            for(Road r : allImportantRoads){
+                                if(!drawingRoads.contains(r)){
+                                    for( Road d : drawingRoads){
+                                        if(Utilities.doRoadsHaveIntersection(r, d)){
+                                            distance = Utilities.getDistanceBetweenRoadAndPoint(r, toPlace.getCoordinate());
+                                            if(distance < mindistance){
+                                                mindistance = distance;
+                                                drawingRoads.add(r);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            for(Road r : drawingRoads){
+                                if(Utilities.isPointOnRoad(r, toPlace.getCoordinate())){
+                                    b = true;
+                                    break;
+                                }
+                            }
+
+                            if(counter == 30 || drawingListSize == drawingRoads.size())
+                                break;
+
+                            System.out.println("counter: " + (counter++) + ". drawingRoads size: " + drawingRoads.size());
+                            drawingListSize = drawingRoads.size();
+                        }
+
+
+
+                        System.out.println("drawingRoads size: " + drawingRoads.size());
+                        String filterText = "osm_id=" + drawingRoads.get(0).getOsmId();
+                        for(int i=1; i<drawingRoads.size(); i++){
+                            filterText += " OR osm_id=" + drawingRoads.get(i).getOsmId();
+                        }
+
+                        System.out.println("FilterText: " + filterText);                                
+                        features = getFilteredFeatures(featureSource, filterText);
+
+
+                        Style style = createStyle(featureSource, Color.BLUE);
+                        layer = new FeatureLayer(features, style);             
+                        break;
+                    }  else {
+                        System.err.println("Can not find one of thiw places in the shp file: [" + data.get(0) + "], [" + data.get(1) + "].");
+                    } 
+                } else {
+                    Style style = createStyle(featureSource, Color.BLUE);
+                    layer = new FeatureLayer(features, style);             
+                    break;                    
                 }
-                
-
-
-                String filterText = "osm_id=" + drawingRoads.get(0).getOsmId();
-                for(int i=1; i<drawingRoads.size(); i++){
-                    filterText += " OR osm_id=" + drawingRoads.get(i).getOsmId();
-                }
-                
-                System.out.println("FilterText: " + filterText);                                
-                features = getFilteredFeatures(featureSource, filterText);
-*/                
-                
-                Style style = createStyle(featureSource, Color.BLUE);
-                layer = new FeatureLayer(features, style);             
-                break;
-                
             }
             case "selectedPlaces": {
                 SimpleFeatureCollection features = getFilteredFeatures(featureSource, getSelectedPlacesFilter(data.get(0), data.get(1)));

@@ -46,12 +46,12 @@ public class QueryPane extends JPanel {
         setLayout(null);
 
         textFrom = new JTextField(20);
-        textFrom.setText("Szentendre");
+        textFrom.setText("Debrecen");
         add(textFrom);
         textFrom.setBounds(200, 30, 200, 25);
 
         textTo = new JTextField(20);
-        textTo.setText("Budapest");
+        textTo.setText("Tiszaigar");
         add(textTo);
         textTo.setBounds(200, 90, 200, 25);
 
@@ -72,9 +72,9 @@ public class QueryPane extends JPanel {
             @Override
             public void action(ActionEvent e) throws Throwable {
                 System.out.println("Begining time: " + new Timestamp(new Date().getTime()));
+                addLayerFromQueryPane(roadsFile, "roads");
                 addLayerFromQueryPane(placesFile, "selectedPlaces");
                 //mapPane.createTranzitTable(placesFile, roadsFile);
-                addLayerFromQueryPane(roadsFile, "roads");
                 filterFeatures();
                 
                 table.setVisible(true);
@@ -96,6 +96,7 @@ public class QueryPane extends JPanel {
                 break;
             case "roads":
                 data.add(textFrom.getText());
+                data.add(textTo.getText());
                 break;
         }
         Layer layer = mapPane.loadLayer(file, type, data);
