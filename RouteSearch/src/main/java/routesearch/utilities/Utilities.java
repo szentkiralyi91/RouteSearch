@@ -9,8 +9,19 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Az osztály a feladat megoldásához szükséges (főként geometraia és konverziós) 
+ * számítási függvényeket tartalmazza.
+ * 
+ */
 public class Utilities {
     
+    /**
+     * Egy String-ként megadott WKT-beli pont koordinátát konvertál Coordináta típusra
+     * @param wktGeometry String-ként leírt WKT geometriai alakzat (POINT)
+     * @return Coordináta típus, a WKT-ban megadott pont koordinátája
+     */
     public static Coordinate convertPointFromWktGeometry(String wktGeometry){      
         try {                    
             if(wktGeometry == null || "".equals(wktGeometry)) 
@@ -24,7 +35,12 @@ public class Utilities {
         }
         return null;
     }
-    
+ 
+    /**
+     * Egy String-ként megadott WKT-beli MULTILINESTRING koordinátáit konvertálja Road típusra
+     * @param wktGeometry String-ként leírt WKT geometriai alakzat (MULTILINESTRING)
+     * @return Road az az út, amit megad a szakaszsorozat
+     */    
     public static Road convertRoadFromWktGeometry(String wktGeometry){
          try {                    
             if(wktGeometry == null || "".equals(wktGeometry)) 
@@ -39,6 +55,12 @@ public class Utilities {
         return null;
     }   
     
+    /**
+     * Egy út (Road) és egy pont közötti távolságot számolja ki
+     * @param road az Út 
+     * @param point a Pont
+     * @return távolság (double)
+     */
     public static double getDistanceBetweenRoadAndPoint(Road road, Coordinate point){
         
         double distance;
@@ -60,19 +82,42 @@ public class Utilities {
         return minDistance;      
     }
     
+    /**
+     * Két pont közötti távolságot számolja ki
+     * @param P egyik pont
+     * @param V másik pont
+     * @return távolság
+     */
     public static double getDistanceBetweenPoints(Coordinate P, Coordinate V){
         return Point2D.distance(P.x, P.y, V.x, V.y);        
     }
     
-     
+    /**
+     * Két település (Place) közötti távolságot számolja ki
+     * @param p1 egyik település
+     * @param p2 másik település
+     * @return távolság
+     */ 
     public static double getDistanceBetweenPlaces(Place p1, Place p2){
         return Utilities.getDistanceBetweenPoints(p1.getCoordinate(), p2.getCoordinate());
     }   
     
+    /**
+     * Meghatározza, hogy a megadott úton található-e a megadott pont
+     * @param road út 
+     * @param point pont
+     * @return TRUE ha a pont az úton található, különben FALSE
+     */
     public static boolean isPointOnRoad(Road road, Coordinate point){     
         return Utilities.getDistanceBetweenRoadAndPoint(road, point) < 0.1;
     }
     
+    /**
+     * Meghatározza, hogy a két megadott út keresztezi-e egymást
+     * @param r1 egyik út
+     * @param r2 másik út
+     * @return TRUE ha metszi egymást a két út, különben FALSE
+     */
     public static boolean doRoadsHaveIntersection(Road r1, Road r2) {
         
         Line2D line1;
@@ -96,14 +141,18 @@ public class Utilities {
                 line2 = new Line2D.Double(r2CurrentX, r2CrrentY, r2NextX, r2NextY);
                 
                 if(line1.intersectsLine(line2))
-                    return true;
-                
+                    return true;                
             }
-        }
-        
+        }        
         return false;
     }
     
+    /**
+     * A bejövő utak listáját (List<Road>) leszűkíti azon utak listájára, amik metszenek egy bizonyos utat
+     * @param roadList utak listája
+     * @param currentRoad az adott út, amivel keressük a metszéspontokat
+     * @return leszűkített utak listája
+     */
     public static List<Road> getNeighborRoads(List<Road> roadList, Road currentRoad){
         List<Road> returnList = new ArrayList<>();
         
@@ -116,6 +165,12 @@ public class Utilities {
         return returnList;
     }
     
+    /**
+     * Meghatároz egy adott ponthoz lévő legközelebb utat az utak egy listájábáól
+     * @param roads utak egy listája
+     * @param point pont
+     * @return Az az út, amelyik a legközelebb van listából az adott ponthoz
+     */
     public static Road nearestRoadToPoint(List<Road> roads, Coordinate point){       
         double distance;
         

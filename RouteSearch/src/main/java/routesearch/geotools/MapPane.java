@@ -8,6 +8,7 @@ import com.vividsolutions.jts.io.ParseException;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
@@ -125,7 +126,7 @@ public class MapPane extends JMapPane {
             case "roads": {
                 SimpleFeatureCollection features; 
                 features = getFilteredFeatures(featureSource, "type='primary'");  
-                boolean letsTryThis = false;
+                boolean letsTryThis = true;
                 if(letsTryThis){
                     WKTReader2 wktReader = new WKTReader2();
 
@@ -290,10 +291,13 @@ public class MapPane extends JMapPane {
         }
             
         System.out.println("Transit table");
+        PrintStream printStream = new PrintStream(System.out, true, "ISO-8859-2");
         for (int i=0; i<placeList.size(); i++) {
             for(int j=0; j<placeList.size(); j++) {
-                System.out.format("%20s%20s%40s\n", placeList.get(i).getName(), placeList.get(j).getName(), 
+                printStream.format("%20s%20s%40s\n", placeList.get(i).getName(), placeList.get(j).getName(), 
                                                         Utilities.getDistanceBetweenPlaces(placeList.get(i),  placeList.get(j)));
+                //System.out.format("%20s%20s%40s\n", placeList.get(i).getName(), placeList.get(j).getName(), 
+                //                                        Utilities.getDistanceBetweenPlaces(placeList.get(i),  placeList.get(j)));
             }
         }       
     }

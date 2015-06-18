@@ -4,6 +4,12 @@ import com.vividsolutions.jts.geom.Coordinate;
 import java.util.Arrays;
 import java.util.Objects;
 
+/**
+ * Az osztály egy adott út reprezentálása. A shape fájlban egy út WKT formátumban, 
+ * szakaszsorozatként (MULTILINESTRING) van megadva, így az osztály lényegében egy
+ * koordináta tömböt tartalmaz, valamint az shp-ban található ID-jét (ha az kinyerhető)
+ *
+ */
 public class Road {
     
     private final String osmId;
@@ -63,6 +69,9 @@ public class Road {
         return getCoordinateString();
     }
     
+    /**
+     * Az út realtív hosszát (első és utolsó pontja közötti egyenes hosszát) határozza meg
+     */
     public double getRelativeLength(){
         Coordinate first = new Coordinate(this.getCoordinates()[0].x, this.getCoordinates()[0].y);
         Coordinate last = new Coordinate(this.getCoordinates()[this.getCoordinates().length-1].x, 

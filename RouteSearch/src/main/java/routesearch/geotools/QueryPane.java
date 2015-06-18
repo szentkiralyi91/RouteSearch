@@ -74,7 +74,7 @@ public class QueryPane extends JPanel {
                 System.out.println("Begining time: " + new Timestamp(new Date().getTime()));
                 addLayerFromQueryPane(roadsFile, "roads");
                 addLayerFromQueryPane(placesFile, "selectedPlaces");
-                //mapPane.createTranzitTable(placesFile, roadsFile);
+                mapPane.createTranzitTable(placesFile, roadsFile);
                 filterFeatures();
                 
                 table.setVisible(true);

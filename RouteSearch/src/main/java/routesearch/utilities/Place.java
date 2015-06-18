@@ -8,6 +8,11 @@ package routesearch.utilities;
 import com.vividsolutions.jts.geom.Coordinate;
 import java.util.Objects;
 
+/**
+ * Az osztály egy adott település reprezentálása. A shape fájlban pont WKT formátumban, 
+ * (POINT) van megadva, így az osztály lényegében egy ennek a pontnak a koordinátáit,
+ * valamint valamint az shp-ban található település tulajdonságait (id, név, típus) tartalmazza.
+ */
 public class Place {
     private final String osmId;
     private final String name;
@@ -67,7 +72,5 @@ public class Place {
     @Override
     public String toString() {
         return "Place{" + "osmId=" + osmId + ", name=" + name + ", type=" + type + ", coordinate=" + coordinate + '}';
-    }
-    
-    
+    }   
 }
