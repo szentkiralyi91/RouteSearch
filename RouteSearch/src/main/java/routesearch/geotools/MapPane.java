@@ -63,7 +63,7 @@ public class MapPane extends JMapPane {
     /**
      * Betölti a városokat (places) a térképre.
      *
-     * @param placesFile
+     * @param placesFile: a városok fájlja
      * @throws Exception
      */
     public MapPane(File placesFile) throws Exception {
@@ -86,13 +86,13 @@ public class MapPane extends JMapPane {
          Ha egy másik útvonalat akarunk kirajzolni, akkor viszont az előzőt el 
          kell tűntetni, azaz az utolsó két layert.*/
         if (map.layers().size() == 3) {
-            map.removeLayer(map.layers().get(map.layers().size()-1));
-            map.removeLayer(map.layers().get(map.layers().size()-1));
+            map.removeLayer(map.layers().get(map.layers().size() - 1));
+            map.removeLayer(map.layers().get(map.layers().size() - 1));
         }
-        
+
         map.addLayer(layer);
         setMapContent(map);
-        
+
         System.out.println("Map layer size: " + map.layers().size());
     }
 
@@ -101,7 +101,8 @@ public class MapPane extends JMapPane {
      * különböző események fognak végrehajtódni.
      *
      * @param file
-     * @param type
+     * @param type: milyen típusú fájl töltünk be, ennek függvényében másképp
+     * működik a függvény
      * @param data
      * @return
      * @throws java.lang.Exception
@@ -109,14 +110,15 @@ public class MapPane extends JMapPane {
     protected final Layer loadLayer(File file, String type, ArrayList<String> data) throws Exception {
         FileDataStore store = FileDataStoreFinder.getDataStore(file);
         SimpleFeatureSource featureSource = store.getFeatureSource();
-        
+
         Layer layer = null;
         switch (type) {
             case "places": {
-                
+
                 //A filter segítségével leszűri az adatokat
-                if(placesFeature == null)
+                if (placesFeature == null) {
                     placesFeature = getFilteredFeatures(featureSource, "type='town' or type = 'village' or type ='city'");
+                }
                 //Stílus beállítás
                 Style style = SLD.createSimpleStyle(placesFeature.getSchema());
                 //Layer létrehozása az adatok, és a stílus alapján
@@ -124,10 +126,10 @@ public class MapPane extends JMapPane {
                 break;
             }
             case "roads": {
-                SimpleFeatureCollection features; 
-                features = getFilteredFeatures(featureSource, "type='primary'");  
+                SimpleFeatureCollection features;
+                features = getFilteredFeatures(featureSource, "type='primary'");
                 boolean letsTryThis = true;
-                if(letsTryThis){
+                if (letsTryThis) {
                     WKTReader2 wktReader = new WKTReader2();
 
                     SimpleFeatureIterator it = features.features();
@@ -136,39 +138,38 @@ public class MapPane extends JMapPane {
                     while (it.hasNext()) {
                         SimpleFeature currentFeature = it.next();
                         Road road = new Road(currentFeature.getAttribute("osm_id").toString(),
-                                             wktReader.read(currentFeature.getAttribute("the_geom").toString()).getCoordinates());
+                                wktReader.read(currentFeature.getAttribute("the_geom").toString()).getCoordinates());
                         allImportantRoads.add(road);
                         //System.out.println(road);
-                    }    
+                    }
 
                     System.out.println("allRoads size    : " + allImportantRoads.size());
-
-
 
                     Place fromPlace = null;
                     Place toPlace = null;
                     boolean routesFound = false;
 
-                    if(placesFeature == null)
-                        placesFeature = getFilteredFeatures(featureSource, "type='town' or type = 'village' or type ='city'");                
+                    if (placesFeature == null) {
+                        placesFeature = getFilteredFeatures(featureSource, "type='town' or type = 'village' or type ='city'");
+                    }
                     SimpleFeatureIterator placesIterator = placesFeature.features();
 
-                    while(placesIterator.hasNext()){
+                    while (placesIterator.hasNext()) {
                         SimpleFeature currentPlace = placesIterator.next();
                         String placeName = currentPlace.getAttribute("name").toString();
-                        if(placeName.equalsIgnoreCase(data.get(0))){
+                        if (placeName.equalsIgnoreCase(data.get(0))) {
                             fromPlace = new Place(placeName,
-                                                  currentPlace.getAttribute("name").toString(),
-                                                  currentPlace.getAttribute("type").toString(),
-                                                  Utilities.convertPointFromWktGeometry(getGetWktGeometryStringFromFeature(currentPlace)));
-                        } else if(placeName.equalsIgnoreCase(data.get(1))){
-                             toPlace = new Place(placeName,
-                                                  currentPlace.getAttribute("name").toString(),
-                                                  currentPlace.getAttribute("type").toString(),
-                                                  Utilities.convertPointFromWktGeometry(getGetWktGeometryStringFromFeature(currentPlace)));                       
+                                    currentPlace.getAttribute("name").toString(),
+                                    currentPlace.getAttribute("type").toString(),
+                                    Utilities.convertPointFromWktGeometry(getGetWktGeometryStringFromFeature(currentPlace)));
+                        } else if (placeName.equalsIgnoreCase(data.get(1))) {
+                            toPlace = new Place(placeName,
+                                    currentPlace.getAttribute("name").toString(),
+                                    currentPlace.getAttribute("type").toString(),
+                                    Utilities.convertPointFromWktGeometry(getGetWktGeometryStringFromFeature(currentPlace)));
                         }
 
-                        if(fromPlace != null && toPlace != null){
+                        if (fromPlace != null && toPlace != null) {
                             routesFound = true;
                             System.out.println("From: " + fromPlace.toString());
                             System.out.println("To  : " + toPlace.toString());
@@ -176,23 +177,24 @@ public class MapPane extends JMapPane {
                         }
                     }
 
-                    if(routesFound){
-                        for(Road r : allImportantRoads){
-                            if(Utilities.isPointOnRoad(r, fromPlace.getCoordinate()))
+                    if (routesFound) {
+                        for (Road r : allImportantRoads) {
+                            if (Utilities.isPointOnRoad(r, fromPlace.getCoordinate())) {
                                 drawingRoads.add(r);
+                            }
                         }
 
                         boolean b = false;
                         double distance, mindistance = 999999;
                         int counter = 1, drawingListSize = -1;
-                        while(b == false){
+                        while (b == false) {
 
-                            for(Road r : allImportantRoads){
-                                if(!drawingRoads.contains(r)){
-                                    for( Road d : drawingRoads){
-                                        if(Utilities.doRoadsHaveIntersection(r, d)){
+                            for (Road r : allImportantRoads) {
+                                if (!drawingRoads.contains(r)) {
+                                    for (Road d : drawingRoads) {
+                                        if (Utilities.doRoadsHaveIntersection(r, d)) {
                                             distance = Utilities.getDistanceBetweenRoadAndPoint(r, toPlace.getCoordinate());
-                                            if(distance < mindistance){
+                                            if (distance < mindistance) {
                                                 mindistance = distance;
                                                 drawingRoads.add(r);
                                                 break;
@@ -202,42 +204,40 @@ public class MapPane extends JMapPane {
                                 }
                             }
 
-                            for(Road r : drawingRoads){
-                                if(Utilities.isPointOnRoad(r, toPlace.getCoordinate())){
+                            for (Road r : drawingRoads) {
+                                if (Utilities.isPointOnRoad(r, toPlace.getCoordinate())) {
                                     b = true;
                                     break;
                                 }
                             }
 
-                            if(counter == 30 || drawingListSize == drawingRoads.size())
+                            if (counter == 30 || drawingListSize == drawingRoads.size()) {
                                 break;
+                            }
 
                             System.out.println("counter: " + (counter++) + ". drawingRoads size: " + drawingRoads.size());
                             drawingListSize = drawingRoads.size();
                         }
 
-
-
                         System.out.println("drawingRoads size: " + drawingRoads.size());
                         String filterText = "osm_id=" + drawingRoads.get(0).getOsmId();
-                        for(int i=1; i<drawingRoads.size(); i++){
+                        for (int i = 1; i < drawingRoads.size(); i++) {
                             filterText += " OR osm_id=" + drawingRoads.get(i).getOsmId();
                         }
 
-                        System.out.println("FilterText: " + filterText);                                
+                        System.out.println("FilterText: " + filterText);
                         features = getFilteredFeatures(featureSource, filterText);
 
-
                         Style style = createStyle(featureSource, Color.BLUE);
-                        layer = new FeatureLayer(features, style);             
+                        layer = new FeatureLayer(features, style);
                         break;
-                    }  else {
+                    } else {
                         System.err.println("Can not find one of thiw places in the shp file: [" + data.get(0) + "], [" + data.get(1) + "].");
-                    } 
+                    }
                 } else {
                     Style style = createStyle(featureSource, Color.BLUE);
-                    layer = new FeatureLayer(features, style);             
-                    break;                    
+                    layer = new FeatureLayer(features, style);
+                    break;
                 }
             }
             case "selectedPlaces": {
@@ -250,58 +250,56 @@ public class MapPane extends JMapPane {
 
         return layer;
     }
-    
+
     /*
-    CQL lekérdezésből létrehoz egy filtert és a filter segítségével leszűri az adatokat  
-    */
-    public static SimpleFeatureCollection getFilteredFeatures(File file, String filterString) throws IOException, CQLException{
+     CQL lekérdezésből létrehoz egy filtert és a filter segítségével leszűri az adatokat  
+     */
+    public static SimpleFeatureCollection getFilteredFeatures(File file, String filterString) throws IOException, CQLException {
         FileDataStore store = FileDataStoreFinder.getDataStore(file);
-        SimpleFeatureSource featureSource = store.getFeatureSource();         
-        return getFilteredFeatures(featureSource, filterString);  
+        SimpleFeatureSource featureSource = store.getFeatureSource();
+        return getFilteredFeatures(featureSource, filterString);
     }
- 
-    public static SimpleFeatureCollection getFilteredFeatures(SimpleFeatureSource featureSource, String filterString) throws IOException, CQLException{
+
+    public static SimpleFeatureCollection getFilteredFeatures(SimpleFeatureSource featureSource, String filterString) throws IOException, CQLException {
         Filter filter = CQL.toFilter(filterString);
-        return featureSource.getFeatures(filter);        
+        return featureSource.getFeatures(filter);
     }
-    
-    public String getSelectedPlacesFilter(String fromWhere, String toWhere){
+
+    public String getSelectedPlacesFilter(String fromWhere, String toWhere) {
         return "name = '" + fromWhere + "' or name ='" + toWhere + "' and (type='town' or type = 'village' or type ='city')";
     }
- 
-  
-    public String getGetWktGeometryStringFromFeature(SimpleFeature feature) throws ParseException{
+
+    public String getGetWktGeometryStringFromFeature(SimpleFeature feature) throws ParseException {
         WKTReader2 wktReader = new WKTReader2();
         String s = wktReader.read(feature.getAttribute("the_geom").toString()).toString();
         return s;
     }
-    
-    public void createTranzitTable(File placesFile, File roadsFile) throws ParseException, IOException, CQLException{
+
+    public void createTranzitTable(File placesFile, File roadsFile) throws ParseException, IOException, CQLException {
         SimpleFeatureCollection placesFeatures = getFilteredFeatures(placesFile, "type='city'");
         SimpleFeatureCollection roadsFeatures = getFilteredFeatures(placesFile, "type='primary'");
-        
+
         SimpleFeatureIterator placesFeaturesIterator = placesFeatures.features();
         List<Place> placeList = new ArrayList<>();
         while (placesFeaturesIterator.hasNext()) {
             SimpleFeature currentFeature = placesFeaturesIterator.next();
-            placeList.add( new Place(currentFeature.getAttribute("osm_id").toString(),
-                                     currentFeature.getAttribute("name").toString(),
-                                     currentFeature.getAttribute("type").toString(),
-                                      Utilities.convertPointFromWktGeometry(getGetWktGeometryStringFromFeature(currentFeature))));        
+            placeList.add(new Place(currentFeature.getAttribute("osm_id").toString(),
+                    currentFeature.getAttribute("name").toString(),
+                    currentFeature.getAttribute("type").toString(),
+                    Utilities.convertPointFromWktGeometry(getGetWktGeometryStringFromFeature(currentFeature))));
         }
-            
+
         System.out.println("Transit table");
         PrintStream printStream = new PrintStream(System.out, true, "ISO-8859-2");
-        for (int i=0; i<placeList.size(); i++) {
-            for(int j=0; j<placeList.size(); j++) {
-                printStream.format("%20s%20s%40s\n", placeList.get(i).getName(), placeList.get(j).getName(), 
-                                                        Utilities.getDistanceBetweenPlaces(placeList.get(i),  placeList.get(j)));
+        for (int i = 0; i < placeList.size(); i++) {
+            for (int j = 0; j < placeList.size(); j++) {
+                printStream.format("%20s%20s%40s\n", placeList.get(i).getName(), placeList.get(j).getName(),
+                        Utilities.getDistanceBetweenPlaces(placeList.get(i), placeList.get(j)));
                 //System.out.format("%20s%20s%40s\n", placeList.get(i).getName(), placeList.get(j).getName(), 
                 //                                        Utilities.getDistanceBetweenPlaces(placeList.get(i),  placeList.get(j)));
             }
-        }       
+        }
     }
-       
 
     /**
      * Eszközök betöltése.

@@ -9,8 +9,8 @@ public class MapFrame extends JFrame {
     /**
      * Erre a frame-re rajzoljuk ki a térképet, és választó panelt.
      *
-     * @param placesFile
-     * @param roadsFile
+     * @param placesFile: a városok fájlja
+     * @param roadsFile: az utak fájlja
      * @throws Exception
      */
     public MapFrame(File placesFile, File roadsFile) throws Exception {
