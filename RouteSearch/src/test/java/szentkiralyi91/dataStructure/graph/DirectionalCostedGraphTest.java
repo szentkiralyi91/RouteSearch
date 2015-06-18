@@ -57,7 +57,6 @@ public class DirectionalCostedGraphTest {
         dcg2.addPoint(8);
         dcg2.addPoint(9);
         dcg2.addPoint(10);
-        dcg2.addPoint(11);
         assertThat(dcg1, is(dcg2));
         
     }   
@@ -265,7 +264,7 @@ public class DirectionalCostedGraphTest {
         assertThat(dcg1.getPointCoordinates(2), is(dcg1.getPointCoordinates(1)));
         assertThat(dcg1.getPointCoordinates(3), not(dcg1.getPointCoordinates(1)));
         assertThat(dcg1.getPointCoordinates(3), is(new Point(1,1)));
-        assertThat(dcg1.getPointCoordinates(4), is(new Point(500,100)));
+        assertThat(dcg1.getPointCoordinates(4), is(new Point(150,180)));
         
         assertNull(dcg1.getPointCoordinates(5));
     }

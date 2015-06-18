@@ -57,7 +57,6 @@ public class NonDirectionalCostedGraphTest {
         ndcg2.addPoint(8);
         ndcg2.addPoint(9);
         ndcg2.addPoint(10);
-        ndcg2.addPoint(11);
         assertThat(ndcg1, is(ndcg2));
         
     }   
@@ -266,8 +265,11 @@ public class NonDirectionalCostedGraphTest {
     public void getPointCoordinatesTest(){
         NonDirectionalCostedGraph ndcg1 = new NonDirectionalCostedGraph();
         ndcg1.addPoint(1);
+        ndcg1.setPointCoordinates(1, new Point(1,2));
         ndcg1.addPoint(2);   
+        ndcg1.setPointCoordinates(2, new Point(1,2));
         ndcg1.addPoint(3);
+        ndcg1.setPointCoordinates(3, new Point(1,1));
     
         assertThat(ndcg1.getPointCoordinates(1), is(new Point(1,2)));
         assertThat(ndcg1.getPointCoordinates(2), is(ndcg1.getPointCoordinates(1)));

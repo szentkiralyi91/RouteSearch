@@ -57,7 +57,6 @@ public class DirectionalNonCostedGraphTest {
         dncg2.addPoint(8);
         dncg2.addPoint(9);
         dncg2.addPoint(10);
-        dncg2.addPoint(11);
         assertThat(dncg1, is(dncg2));
         
     }   
@@ -248,8 +247,11 @@ public class DirectionalNonCostedGraphTest {
     public void getPointCoordinatesTest(){
         DirectionalNonCostedGraph dncg1 = new DirectionalNonCostedGraph();
         dncg1.addPoint(1);
-        dncg1.addPoint(2);   
+        dncg1.setPointCoordinates(1, new Point(1,2));
+        dncg1.addPoint(2);
+        dncg1.setPointCoordinates(2, new Point(1,2));
         dncg1.addPoint(3);
+        dncg1.setPointCoordinates(3, new Point(1,1));
     
         assertThat(dncg1.getPointCoordinates(1), is(new Point(1,2)));
         assertThat(dncg1.getPointCoordinates(2), is(dncg1.getPointCoordinates(1)));
